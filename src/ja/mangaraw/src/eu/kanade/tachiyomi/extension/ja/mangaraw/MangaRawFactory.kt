@@ -5,10 +5,16 @@ import eu.kanade.tachiyomi.source.SourceFactory
 
 class MangaRawFactory : SourceFactory {
     override fun createSources(): List<Source> = listOf(
-        Manga1000(),
-        Manga1001()
+        Comick(),
+        MangaPro()
     )
 }
 
-class Manga1000 : MangaRaw("Manga1000", "https://manga1000.com")
-class Manga1001 : MangaRaw("Manga1001", "https://manga1001.com")
+// Comick has a slightly different layout in html, even though it looks exactly the same to MangaRaw visually
+class Comick : MangaRaw(
+    "Comick",
+    "https://comick.top",
+    "#main > article > div > div > div.entry-content > center > p > img"
+)
+
+class MangaPro : MangaRaw("MangaPro", "https://mangapro.top")
