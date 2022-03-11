@@ -14,8 +14,9 @@ import org.jsoup.nodes.Element
 abstract class MangaRaw(
     override val name: String,
     override val baseUrl: String,
-    private val imageSelector: String = ".wp-block-image > img"
 ) : ParsedHttpSource() {
+
+    protected open val imageSelector = ".wp-block-image > img"
 
     override val lang = "ja"
 
@@ -25,14 +26,8 @@ abstract class MangaRaw(
         return super.headersBuilder().add("Referer", baseUrl)
     }
 
-    // comick.top doesn't have a popular manga page
-    // redirect to latest manga request
-    override fun popularMangaRequest(page: Int): Request {
-        return if (name == "Comick")
-            latestUpdatesRequest(page)
-        else
-            GET("$baseUrl/seachlist/page/$page/?cat=-1", headers)
-    }
+    override fun popularMangaRequest(page: Int): Request =
+        GET("$baseUrl/seachlist/page/$page/?cat=-1", headers)
 
     override fun popularMangaSelector() = "article"
 
@@ -64,14 +59,6 @@ abstract class MangaRaw(
     override fun mangaDetailsParse(document: Document) = SManga.create().apply {
         // All manga details are located in the same <p> tag
         // So here are some jank way of extracting them
-        // comick.top doesn't have author or genre info
-        if (name != "Comick") {
-            // Extract the author, take out the colon and quotes
-            author = document.select("#main > article > div > div > div > div > p").html()
-                .substringAfter("</strong>").substringBefore("<br>").drop(1)
-            genre = document.select("#main > article > div > div > div > div > p > a")
-                .joinToString(separator = ", ", transform = { it.text() })
-        }
         description = document.select("#main > article > div > div > div > div > p").html()
             .substringAfterLast("<br>")
         thumbnail_url = document.select(".wp-block-image img").attr("abs:src")
